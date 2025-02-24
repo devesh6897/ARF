@@ -4,92 +4,133 @@ using UnityEngine.Events;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
-/// <summary>
-/// Listens for touch events and performs an AR raycast from the screen touch point.
-/// AR raycasts will only hit detected trackables like feature points and planes.
-///
-/// If a raycast hits a trackable, the <see cref="placedPrefab"/> is instantiated
-/// and moved to the hit position.
-/// </summary>
 [RequireComponent(typeof(ARRaycastManager))]
+[RequireComponent(typeof(ARPlaneManager))]
 public class PlaceOnPlane : MonoBehaviour
 {
     [SerializeField]
-    [Tooltip("Instantiates this prefab on a plane at the touch location.")]
-    GameObject m_PlacedPrefab;
-
-    UnityEvent placementUpdate;
+    [Tooltip("List of prefabs to randomly instantiate on a plane at the touch location.")]
+    List<GameObject> m_PlacedPrefabs = new List<GameObject>();
 
     [SerializeField]
     GameObject visualObject;
 
-    /// <summary>
-    /// The prefab to instantiate on touch.
-    /// </summary>
-    public GameObject placedPrefab
-    {
-        get { return m_PlacedPrefab; }
-        set { m_PlacedPrefab = value; }
-    }
+    [SerializeField]
+    [Tooltip("Maximum Y height difference from the lowest detected plane to consider as floor")]
+    float maxFloorHeightDifference = 0.1f;
 
-    /// <summary>
-    /// The object instantiated as a result of a successful raycast intersection with a plane.
-    /// </summary>
-    public GameObject spawnedObject { get; private set; }
+    UnityEvent placementUpdate;
+
+    private ARPlaneManager planeManager;
+    private bool hasSpawnedThisTouch = false;
+    private Vector2 lastTouchPosition;
+    private float lowestPlaneY = float.MaxValue;
+
+    public List<GameObject> placedPrefabs
+    {
+        get { return m_PlacedPrefabs; }
+        set { m_PlacedPrefabs = value; }
+    }
 
     void Awake()
     {
         m_RaycastManager = GetComponent<ARRaycastManager>();
+        planeManager = GetComponent<ARPlaneManager>();
 
         if (placementUpdate == null)
             placementUpdate = new UnityEvent();
+        placementUpdate.AddListener(DisableVisual);
 
-        placementUpdate.AddListener(DiableVisual);
+        // Subscribe to the planesChanged event
+        planeManager.planesChanged += OnPlanesChanged;
     }
 
-    bool TryGetTouchPosition(out Vector2 touchPosition)
+    void OnDestroy()
     {
-        if (Input.touchCount > 0)
+        if (planeManager != null)
         {
-            touchPosition = Input.GetTouch(0).position;
+            planeManager.planesChanged -= OnPlanesChanged;
+        }
+    }
+
+    private void OnPlanesChanged(ARPlanesChangedEventArgs args)
+    {
+        // Update the lowest plane Y position when new planes are added
+        foreach (var plane in args.added)
+        {
+            if (plane.center.y < lowestPlaneY)
+            {
+                lowestPlaneY = plane.center.y;
+            }
+        }
+    }
+
+    bool IsFloorPlane(ARRaycastHit hit)
+    {
+        // If this is one of the first planes detected, consider it as a potential floor
+        if (lowestPlaneY == float.MaxValue)
+        {
+            lowestPlaneY = hit.pose.position.y;
             return true;
         }
 
-        touchPosition = default;
-        return false;
+        // Check if the hit plane is close enough to the lowest detected plane
+        return Mathf.Abs(hit.pose.position.y - lowestPlaneY) <= maxFloorHeightDifference;
     }
 
     void Update()
     {
-        if (!TryGetTouchPosition(out Vector2 touchPosition))
-            return;
-
-        if (m_RaycastManager.Raycast(touchPosition, s_Hits, TrackableType.PlaneWithinPolygon))
+        if (Input.touchCount == 0)
         {
-            // Raycast hits are sorted by distance, so the first one
-            // will be the closest hit.
-            var hitPose = s_Hits[0].pose;
+            hasSpawnedThisTouch = false;
+            return;
+        }
 
-            if (spawnedObject == null)
-            {
-                spawnedObject = Instantiate(m_PlacedPrefab, hitPose.position, hitPose.rotation);
+        Touch touch = Input.GetTouch(0);
+        lastTouchPosition = touch.position;
 
-            }
-            else
-            {
-                //repositioning of the object 
-                spawnedObject.transform.position = hitPose.position;
-            }
-            placementUpdate.Invoke();
+        if (touch.phase == TouchPhase.Ended && !hasSpawnedThisTouch)
+        {
+            SpawnPrefab();
+            hasSpawnedThisTouch = true;
         }
     }
 
-    public void DiableVisual()
+    private void SpawnPrefab()
+    {
+        if (m_RaycastManager.Raycast(lastTouchPosition, s_Hits, TrackableType.PlaneWithinPolygon))
+        {
+            // Find the first hit that corresponds to a floor plane
+            ARRaycastHit floorHit = new ARRaycastHit();
+            bool foundFloor = false;
+
+            foreach (var hit in s_Hits)
+            {
+                if (IsFloorPlane(hit))
+                {
+                    floorHit = hit;
+                    foundFloor = true;
+                    break;
+                }
+            }
+
+            // Only spawn if we hit a floor plane
+            if (foundFloor && m_PlacedPrefabs != null && m_PlacedPrefabs.Count > 0)
+            {
+                int randomIndex = Random.Range(0, m_PlacedPrefabs.Count);
+                GameObject prefabToSpawn = m_PlacedPrefabs[randomIndex];
+
+                Instantiate(prefabToSpawn, floorHit.pose.position, floorHit.pose.rotation);
+                placementUpdate.Invoke();
+            }
+        }
+    }
+
+    public void DisableVisual()
     {
         visualObject.SetActive(false);
     }
 
     static List<ARRaycastHit> s_Hits = new List<ARRaycastHit>();
-
     ARRaycastManager m_RaycastManager;
 }

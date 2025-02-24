@@ -229,8 +229,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7b849536edae794d98372c8f7a500d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_PlacedPrefab: {fileID: 1406642637560741314, guid: 95fa96b6f11c7874c9b716994a5f5dad, type: 3}
+  m_PlacedPrefabs:
+  - {fileID: 1406642637560741314, guid: 95fa96b6f11c7874c9b716994a5f5dad, type: 3}
+  - {fileID: 1406642637560741314, guid: ffebbdc71553cde4296fdda90cba277d, type: 3}
+  - {fileID: 1406642637560741314, guid: e49fac7b8bf0cc74fa6aad962711f39e, type: 3}
+  - {fileID: 1406642637560741314, guid: 0b2ad80966298ef4aa3bed2b5ac0bbc4, type: 3}
   visualObject: {fileID: 0}
+  maxFloorHeightDifference: 5
 --- !u!114 &307955505
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -370,6 +375,7 @@ GameObject:
   - component: {fileID: 665995534}
   - component: {fileID: 665995533}
   - component: {fileID: 665995532}
+  - component: {fileID: 665995535}
   m_Layer: 0
   m_Name: AR Session
   m_TagString: Untagged
@@ -419,6 +425,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &665995535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 665995531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bff7488c9a04b3458b8f53c6f83e847, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -636,7 +654,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.645283, g: 0.645283, b: 0.645283, a: 1}
+  m_Color: {r: 0.7509433, g: 0.7466927, b: 0.7466927, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
