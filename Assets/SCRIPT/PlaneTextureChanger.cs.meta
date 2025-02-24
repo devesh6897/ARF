@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 197dd3110431fc74d8189c4917ad9fbb
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - planeManager: {instanceID: 0}
+  - newTexture: {fileID: 2800000, guid: 428bc6ffb61d23240a61937c16997b41, type: 3}
+  - opaqueMaterial: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
