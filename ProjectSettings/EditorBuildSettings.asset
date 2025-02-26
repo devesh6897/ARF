@@ -9,8 +9,11 @@ EditorBuildSettings:
     path: Assets/Scenes/start.unity
     guid: d6c7e0be7bbf6f041ba613418f0beefc
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/balloon.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 0
+    path: Assets/Scenes/SampleScene 1.unity
+    guid: 978e6d8aa3ccd484a9d67b6e1ee932e1
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: b20fd9c52349d3540a5b1330cdfa1506, type: 2}
     UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: 4342235385dca274caaa95c3b4ffd09a, type: 2}
