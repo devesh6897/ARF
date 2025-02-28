@@ -1,81 +1,68 @@
 using UnityEngine;
 
-public class SimpleObjectToggler : MonoBehaviour
+public class SimpleFireTagToggler : MonoBehaviour
 {
-    [Tooltip("The first object that can be toggled")]
+    [Tooltip("The first object that will be disabled when hit by fire")]
     public GameObject object1;
-    [Tooltip("The second object that can be toggled")]
+
+    [Tooltip("The second object that will be activated when hit by fire")]
     public GameObject object2;
-    [Tooltip("The camera used for raycasting")]
-    public Camera mainCamera;
+
     [Tooltip("Enable debug logs for troubleshooting")]
     public bool debugMode = false;
 
     void Start()
     {
-        if (mainCamera == null)
-        {
-            mainCamera = Camera.main;
-        }
-
+        // Check for missing references
         if (object1 == null || object2 == null)
         {
-            Debug.LogError("SimpleObjectToggler: Please assign both object references in the inspector!");
+            Debug.LogError("SimpleFireTagToggler: Please assign both object references in the inspector!");
             return;
         }
 
+        // Set initial state
         object1.SetActive(true);
         object2.SetActive(false);
 
         if (debugMode)
         {
-            Debug.Log("SimpleObjectToggler initialized. Object1 active, Object2 inactive.");
+            Debug.Log("SimpleFireTagToggler initialized. Object1 active, Object2 inactive.");
         }
     }
 
-    void Update()
+    // Handle regular collisions
+    void OnCollisionEnter(Collision other)
     {
-        if (Input.GetMouseButtonDown(0))
+        if (other.gameObject.layer == LayerMask.NameToLayer("ball"))
         {
-            HandleInput(Input.mousePosition);
-        }
-
-        if (Input.touchCount > 0)
-        {
-            Touch touch = Input.GetTouch(0);
-            if (touch.phase == TouchPhase.Began)
-            {
-                HandleInput(touch.position);
-            }
-        }
-    }
-
-    void HandleInput(Vector2 screenPosition)
-    {
-        Ray ray = mainCamera.ScreenPointToRay(screenPosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
+            ToggleObjects();
+            Destroy(other.gameObject);
             if (debugMode)
             {
-                Debug.Log("Hit object: " + hit.collider.gameObject.name);
-            }
-
-            // Check if the hit object is part of this prefab/gameObject instance
-            SimpleObjectToggler hitToggler = hit.collider.GetComponentInParent<SimpleObjectToggler>();
-
-            // Only toggle if we hit THIS specific instance of the prefab
-            if (hitToggler == this)
-            {
-                object1.SetActive(false);
-                object2.SetActive(true);
-
-                if (debugMode)
-                {
-                    Debug.Log("Toggled objects on: " + gameObject.name);
-                }
+                Debug.Log("Collision with 'fire' tag, toggling objects.");
             }
         }
+
+    }
+
+    // Handle trigger collisions
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("ball"))
+        {
+            Destroy(other.gameObject);
+
+            ToggleObjects();
+
+
+        }
+
+    }
+
+    // Toggle objects method
+    void ToggleObjects()
+    {
+        object1.SetActive(false);
+        object2.SetActive(true);
     }
 }
